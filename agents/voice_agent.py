@@ -41,8 +41,8 @@ GRAPH STRUCTURE:
         self._agent_system_prompt = agent_system_prompt + word_limit_instruction + graph_structure
         self._temperature = temperature
         self._agent_tool_prompt = agent_tool_prompt
-        self._ngrok_url = os.environ.get("NGROK_SERVER_URL", "https://b73f-34-143-170-85.ngrok-free.app")
-        self._model_name = "Qwen/Qwen1.5-1.8B-Chat"  
+        self._ngrok_url = os.environ.get("NGROK_SERVER_URL", "https://0d05-35-231-207-83.ngrok-free.app")
+        self._model_name = "Qwen/Qwen2.5-7B-Instruct"  
 
     def get_name(self):
         """Gets the name of an agent"""
