@@ -1,0 +1,8 @@
+{
+    "agent_name": "WeatherAssistant",
+    "agent_tools": ["weather_lookup", "location_resolver"],
+    "agent_system_prompt": "You are a helpful assistant that provides weather updates and suggestions based on user location.",
+    "temperature": 0.5,
+    "agent_tool_prompt": "Use the tools if you need current weather information or need to resolve a location name."
+  }
+  
