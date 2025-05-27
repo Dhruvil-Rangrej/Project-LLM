@@ -16,53 +16,59 @@ class JSONGraphBuilder:
         )
 
     @staticmethod
-    def build_graph_from_json_files(json_files: List[str]) -> AgentGraph:
+    def build_graph_from_json_file(json_file: str) -> AgentGraph:
         """
-        Build an agent graph from multiple JSON files.
+        Build an agent graph from a single JSON file containing all agent configurations.
         
-        Each JSON file should have the following structure:
+        The JSON file should have the following structure:
         {
-            "agent_name": "string",
-            "agent_tools": ["tool1", "tool2"],
-            "agent_system_prompt": "string",
-            "temperature": float,
-            "agent_tool_prompt": "string",
-            "is_root": boolean,
-            "parent_agent": "string",
-            "transition_rules": {
-                "intent1": "target_agent1",
-                "intent2": "target_agent2"
-            }
+            "agents": [
+                {
+                    "agent_name": "string",
+                    "agent_tools": ["tool1", "tool2"],
+                    "agent_system_prompt": "string",
+                    "temperature": float,
+                    "agent_tool_prompt": "string",
+                    "is_root": boolean,
+                    "parent_agent": "string",
+                    "transition_rules": {
+                        "intent1": "target_agent1",
+                        "intent2": "target_agent2"
+                    }
+                },
+                ...
+            ]
         }
         
         Args:
-            json_files: List of paths to JSON files containing agent configurations
+            json_file: Path to the JSON file containing all agent configurations
             
         Returns:
             AgentGraph: The constructed agent graph
         """
+        with open(json_file, 'r') as f:
+            config = json.load(f)
+            
         agents = {}
         root_agent = None
         
         # First pass: Create all agents
-        for json_file in json_files:
-            with open(json_file, 'r') as f:
-                agent_data = json.load(f)
-                agent = JSONGraphBuilder.create_agent_from_json(agent_data)
-                agents[agent.get_name()] = {
-                    "agent": agent,
-                    "is_root": agent_data.get("is_root", False),
-                    "parent_agent": agent_data.get("parent_agent"),
-                    "transition_rules": agent_data.get("transition_rules", {})
-                }
-                
-                if agent_data.get("is_root", False):
-                    if root_agent is not None:
-                        raise ValueError("Multiple root agents found in JSON files")
-                    root_agent = agent
+        for agent_data in config["agents"]:
+            agent = JSONGraphBuilder.create_agent_from_json(agent_data)
+            agents[agent.get_name()] = {
+                "agent": agent,
+                "is_root": agent_data.get("is_root", False),
+                "parent_agent": agent_data.get("parent_agent"),
+                "transition_rules": agent_data.get("transition_rules", {})
+            }
+            
+            if agent_data.get("is_root", False):
+                if root_agent is not None:
+                    raise ValueError("Multiple root agents found in JSON file")
+                root_agent = agent
         
         if root_agent is None:
-            raise ValueError("No root agent found in JSON files")
+            raise ValueError("No root agent found in JSON file")
             
         # Create the graph with the root agent
         agent_graph = AgentGraph(
@@ -92,14 +98,10 @@ class JSONGraphBuilder:
 
 if __name__ == "__main__":
     # Example usage
-    json_files = [
-        "agents/reception_agent.json",
-        "agents/booking_agent.json",
-        "agents/scheduler_agent.json"
-    ]
+    json_file = "agent_config.json"
     
     try:
-        agent_graph = JSONGraphBuilder.build_graph_from_json_files(json_files)
+        agent_graph = JSONGraphBuilder.build_graph_from_json_file(json_file)
         print(f"Successfully built agent graph with root agent: {agent_graph.get_current_agent().get_name()}")
     except Exception as e:
         print(f"Error building agent graph: {str(e)}") 

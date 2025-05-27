@@ -1,0 +1,249 @@
+{
+    "agents": [
+        {
+            "agent_name": "reception_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "transfer_call",
+                    "description": "Transfer a call to the right department.",
+                    "parameters": {"type": "object", "properties": {}}
+                }
+            }],
+            "agent_system_prompt": " You are an office reception agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Greet visitors, understand their needs, and redirect them to booking, scheduler, FAQ, emergency, HR, IT support, or visitor management as appropriate.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": true,
+            "parent_agent": null,
+            "transition_rules": {
+                "booking": "booking_agent",
+                "faq": "faq_agent",
+                "emergency": "emergency_agent",
+                "hr": "hr_agent",
+                "it": "it_agent",
+                "visitor": "visitor_agent",
+                "feedback": "feedback_agent"
+            }
+        },
+        {
+            "agent_name": "booking_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "handle_booking",
+                    "description": "Handle room and resource bookings.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "resource_type": {"type": "string"},
+                            "duration": {"type": "string"},
+                            "participants": {"type": "integer"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": "You are a booking agent. Always respond within 100 words. You are a helpful and friendly in nature, lead users to a solution or redirect. Handle room and resource bookings, and redirect to scheduler, FAQ, reception, or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "scheduler": "scheduler_agent",
+                "faq": "faq_agent",
+                "feedback": "feedback_agent",
+                "reception": "reception_agent"
+            }
+        },
+        {
+            "agent_name": "scheduler_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "manage_schedule",
+                    "description": "Manage and update schedules.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "event_type": {"type": "string"},
+                            "start_time": {"type": "string"},
+                            "end_time": {"type": "string"},
+                            "location": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are a scheduler agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Manage schedules and redirect to reception or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "booking_agent",
+            "transition_rules": {
+                "reception": "reception_agent",
+                "feedback": "feedback_agent"
+            }
+        },
+        {
+            "agent_name": "faq_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "answer_faq",
+                    "description": "Answer frequently asked questions.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "question_type": {"type": "string"},
+                            "context": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are an FAQ agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Answer common questions and redirect to reception, HR, IT, or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "reception": "reception_agent",
+                "feedback": "feedback_agent",
+                "hr": "hr_agent",
+                "it": "it_agent"
+            }
+        },
+        {
+            "agent_name": "emergency_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "handle_emergency",
+                    "description": "Handle emergency situations.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "emergency_type": {"type": "string"},
+                            "location": {"type": "string"},
+                            "severity": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are an emergency response agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle emergency situations and redirect to reception or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "reception": "reception_agent",
+                "feedback": "feedback_agent"
+            }
+        },
+        {
+            "agent_name": "feedback_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "collect_feedback",
+                    "description": "Collect and process user feedback.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "feedback_type": {"type": "string"},
+                            "rating": {"type": "integer"},
+                            "comments": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are a feedback collection agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Collect user feedback and redirect to reception as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "reception": "reception_agent"
+            }
+        },
+        {
+            "agent_name": "hr_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "handle_hr_query",
+                    "description": "Handle HR-related queries (leave, payroll, policies).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "topic": {"type": "string"},
+                            "employee_id": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": "You are an HR agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle HR queries and redirect to FAQ, reception, or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "faq": "faq_agent",
+                "reception": "reception_agent",
+                "feedback": "feedback_agent"
+            }
+        },
+        {
+            "agent_name": "it_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "handle_it_support",
+                    "description": "Handle IT support requests.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "issue_type": {"type": "string"},
+                            "priority": {"type": "string"},
+                            "user_id": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are an IT support agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle IT issues and redirect to FAQ, reception, or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "faq": "faq_agent",
+                "reception": "reception_agent",
+                "feedback": "feedback_agent"
+            }
+        },
+        {
+            "agent_name": "visitor_agent",
+            "agent_tools": [{
+                "type": "function",
+                "function": {
+                    "name": "manage_visitor",
+                    "description": "Manage visitor check-ins, badges, and notifications.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "visitor_name": {"type": "string"},
+                            "purpose": {"type": "string"}
+                        }
+                    }
+                }
+            }],
+            "agent_system_prompt": " You are a visitor management agent. Always respond within 100 words. You are a helpful and friendly in nature, lead users to a solution or redirect.Manage visitor check-ins and redirect to booking, reception, or feedback as needed.",
+            "temperature": 0.7,
+            "agent_tool_prompt": "",
+            "is_root": false,
+            "parent_agent": "reception_agent",
+            "transition_rules": {
+                "booking": "booking_agent",
+                "reception": "reception_agent",
+                "feedback": "feedback_agent"
+            }
+        }
+    ]
+} 
