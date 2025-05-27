@@ -11,7 +11,7 @@
                 }
             }],
             "agent_system_prompt": " You are an office reception agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Greet visitors, understand their needs, and redirect them to booking, scheduler, FAQ, emergency, HR, IT support, or visitor management as appropriate.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": true,
             "parent_agent": null,
@@ -43,7 +43,7 @@
                 }
             }],
             "agent_system_prompt": "You are a booking agent. Always respond within 100 words. You are a helpful and friendly in nature, lead users to a solution or redirect. Handle room and resource bookings, and redirect to scheduler, FAQ, reception, or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -73,7 +73,7 @@
                 }
             }],
             "agent_system_prompt": " You are a scheduler agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Manage schedules and redirect to reception or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "booking_agent",
@@ -99,7 +99,7 @@
                 }
             }],
             "agent_system_prompt": " You are an FAQ agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Answer common questions and redirect to reception, HR, IT, or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -128,7 +128,7 @@
                 }
             }],
             "agent_system_prompt": " You are an emergency response agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle emergency situations and redirect to reception or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -155,7 +155,7 @@
                 }
             }],
             "agent_system_prompt": " You are a feedback collection agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Collect user feedback and redirect to reception as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -180,7 +180,7 @@
                 }
             }],
             "agent_system_prompt": "You are an HR agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle HR queries and redirect to FAQ, reception, or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -208,7 +208,7 @@
                 }
             }],
             "agent_system_prompt": " You are an IT support agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle IT issues and redirect to FAQ, reception, or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
@@ -235,7 +235,7 @@
                 }
             }],
             "agent_system_prompt": " You are a visitor management agent. Always respond within 100 words. You are a helpful and friendly in nature, lead users to a solution or redirect.Manage visitor check-ins and redirect to booking, reception, or feedback as needed.",
-            "temperature": 0.7,
+            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
