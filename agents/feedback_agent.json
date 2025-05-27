@@ -1,0 +1,26 @@
+{
+    "agent_name": "feedback_agent",
+    "agent_tools": [{
+        "type": "function",
+        "function": {
+            "name": "collect_feedback",
+            "description": "Collect and process user feedback.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "feedback_type": {"type": "string"},
+                    "rating": {"type": "integer"},
+                    "comments": {"type": "string"}
+                }
+            }
+        }
+    }],
+    "agent_system_prompt": "You are a feedback collection agent. Always respond within 50 words. Collect user feedback and redirect to reception as needed.",
+    "temperature": 0.7,
+    "agent_tool_prompt": "",
+    "is_root": false,
+    "parent_agent": "reception_agent",
+    "transition_rules": {
+        "reception": "reception_agent"
+    }
+} 

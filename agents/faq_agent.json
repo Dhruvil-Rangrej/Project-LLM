@@ -1,0 +1,28 @@
+{
+    "agent_name": "faq_agent",
+    "agent_tools": [{
+        "type": "function",
+        "function": {
+            "name": "answer_faq",
+            "description": "Answer frequently asked questions.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question_type": {"type": "string"},
+                    "context": {"type": "string"}
+                }
+            }
+        }
+    }],
+    "agent_system_prompt": "You are an FAQ agent. Always respond within 50 words. Answer common questions and redirect to reception, HR, IT, or feedback as needed.",
+    "temperature": 0.7,
+    "agent_tool_prompt": "",
+    "is_root": false,
+    "parent_agent": "reception_agent",
+    "transition_rules": {
+        "reception": "reception_agent",
+        "feedback": "feedback_agent",
+        "hr": "hr_agent",
+        "it": "it_agent"
+    }
+} 

@@ -1,0 +1,28 @@
+{
+    "agent_name": "scheduler_agent",
+    "agent_tools": [{
+        "type": "function",
+        "function": {
+            "name": "manage_schedule",
+            "description": "Manage and update schedules.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "event_type": {"type": "string"},
+                    "start_time": {"type": "string"},
+                    "end_time": {"type": "string"},
+                    "location": {"type": "string"}
+                }
+            }
+        }
+    }],
+    "agent_system_prompt": "You are a scheduler agent. Always respond within 50 words. Manage schedules and redirect to reception or feedback as needed.",
+    "temperature": 0.7,
+    "agent_tool_prompt": "",
+    "is_root": false,
+    "parent_agent": "booking_agent",
+    "transition_rules": {
+        "reception": "reception_agent",
+        "feedback": "feedback_agent"
+    }
+} 

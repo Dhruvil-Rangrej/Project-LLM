@@ -1,0 +1,27 @@
+{
+    "agent_name": "emergency_agent",
+    "agent_tools": [{
+        "type": "function",
+        "function": {
+            "name": "handle_emergency",
+            "description": "Handle emergency situations.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "emergency_type": {"type": "string"},
+                    "location": {"type": "string"},
+                    "severity": {"type": "string"}
+                }
+            }
+        }
+    }],
+    "agent_system_prompt": "You are an emergency response agent. Always respond within 50 words. Handle emergency situations and redirect to reception or feedback as needed.",
+    "temperature": 0.7,
+    "agent_tool_prompt": "",
+    "is_root": false,
+    "parent_agent": "reception_agent",
+    "transition_rules": {
+        "reception": "reception_agent",
+        "feedback": "feedback_agent"
+    }
+} 
