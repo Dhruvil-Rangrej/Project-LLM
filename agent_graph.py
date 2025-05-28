@@ -1,13 +1,7 @@
 from typing import Dict, Generator, List, Optional
 from agents.voice_agent import ConversationalAgent
 from agent_node import AgentNode
-
-# TODO : prompt a model or agent that answer the question if agent is able to handle
-# it and if there is 'yes there is a emergency' then output "TRANSITION_TO:{emergency_agent}"
-# that's how we can control the transition.
-TRANSITION_TEXT = "TRANSITION_TO:"
-TRANSITION_CONFIRMATION = "TRANSITION_CONFIRM:"
-TRANSITION_CONTEXT = "TRANSITION_CONTEXT:"
+from transition_manager import TransitionManager, TRANSITION_PATH_SEPARATOR
 
 
 class AgentGraph:
@@ -25,12 +19,17 @@ class AgentGraph:
         self.agent_path: List[str] = [root_agent.get_name()]
         self.conversation_history: List[Dict] = []
         self.intent_patterns = intent_patterns or {}
-        # Global context that persists across all agents
-        self.global_context: Dict = {
-            "conversation_summary": [],
-            "user_preferences": {},
-            "session_data": {},
-            "transition_history": []
+        
+        # Initialize transition manager
+        self.transition_manager = TransitionManager()
+        
+        # Per-agent context (simplified)
+        self.agent_contexts: Dict[str, Dict] = {
+            root_agent.get_name(): {
+                "conversation_summary": [],
+                "user_preferences": {},
+                "session_data": {}
+            }
         }
         
     def add_agent(self, parent_agent_name: str, agent: ConversationalAgent, 
@@ -50,6 +49,13 @@ class AgentGraph:
         self.nodes[agent.get_name()] = agent_node
         self.nodes[parent_agent_name].add_child(agent_node)
         
+        # Initialize context for the new agent
+        self.agent_contexts[agent.get_name()] = {
+            "conversation_summary": [],
+            "user_preferences": {},
+            "session_data": {}
+        }
+        
     def transition_to(self, agent_name: str) -> bool:
         if agent_name not in self.nodes:
             return False
@@ -59,11 +65,12 @@ class AgentGraph:
         return True
         
     def process_message(self, user_message: str) -> Generator[str, None, None]:
-        # Update global context with new user message
-        self.global_context["conversation_summary"].append({
+        # Update current agent's context with new user message
+        current_agent_name = self.active_node.agent.get_name()
+        self.agent_contexts[current_agent_name]["conversation_summary"].append({
             "role": "user",
             "content": user_message,
-            "agent": self.active_node.agent.get_name()
+            "agent": current_agent_name
         })
         
         self.conversation_history.append({
@@ -73,12 +80,13 @@ class AgentGraph:
         
         active_agent = self.active_node.agent
         
-        # Add system message with global context
+        # Add system message with parent context (not global)
         if len(self.conversation_history) == 1:
             system_message = active_agent.get_system_message()
-            # Include relevant global context in system message
-            context_str = self._format_global_context()
-            system_message += f"\nGlobal Context: {context_str}"
+            # Include relevant parent context in system message
+            context_str = self._format_parent_context(current_agent_name)
+            if context_str:
+                system_message += f"\nParent Context: {context_str}"
             messages = [{"role": "system", "content": system_message}]
             messages.extend(self.conversation_history)
         else:
@@ -91,11 +99,11 @@ class AgentGraph:
         
         full_response = "".join(response_chunks) if isinstance(response_chunks[0], str) else response_chunks[0]
         
-        # Update global context with agent response
-        self.global_context["conversation_summary"].append({
+        # Update current agent's context with agent response
+        self.agent_contexts[current_agent_name]["conversation_summary"].append({
             "role": "assistant",
             "content": full_response,
-            "agent": self.active_node.agent.get_name()
+            "agent": current_agent_name
         })
         
         self.conversation_history.append({
@@ -104,16 +112,21 @@ class AgentGraph:
         })
         
         # Check for transition intent with improved detection
-        transition_target = self._detect_intent_and_transition(user_message, full_response)
+        transition_target = self.transition_manager.detect_intent_and_transition(
+            user_message, full_response, self.active_node, self.nodes)
         if transition_target:
-            # Update global context before transition
-            self._update_global_context(user_message, full_response, transition_target)
+            # Record the transition
+            self.transition_manager.record_transition(
+                current_agent_name, user_message, full_response, transition_target, self.agent_contexts)
             
             if self.transition_to(transition_target):
-                transition_message = f"\n[Transitioning to {transition_target}]\n"
-                context_str = self._format_global_context()
-                transition_message += f"[Global Context: {context_str}]\n"
-                yield transition_message
+                # Pass the original query to the new agent for processing
+                yield f"\n[Transferring to {transition_target} to handle your request...]\n"
+                
+                # Process the query with the new agent
+                yield from self.transition_manager.process_transitioned_message(
+                    user_message, transition_target, self.nodes, self.agent_contexts, 
+                    self.conversation_history, self._format_parent_context)
                 
     def get_current_agent(self) -> ConversationalAgent:
         """Get the currently active agent"""
@@ -123,111 +136,55 @@ class AgentGraph:
         """Get the path of agents that led to the current agent"""
         return self.agent_path.copy()
         
-    def _update_global_context(self, user_message: str, response: str, next_agent: str) -> None:
-        """Update the global context with the latest interaction and transition"""
-        # Update transition history
-        self.global_context["transition_history"].append({
-            "from_agent": self.active_node.agent.get_name(),
-            "to_agent": next_agent,
-            "user_message": user_message,
-            "agent_response": response
-        })
+    def get_transitions(self) -> List[Dict]:
+        """Get all transitions that have occurred"""
+        return self.transition_manager.get_transitions()
         
-        # Extract and store any user preferences or session data
-        # This is a simple implementation - you can make it more sophisticated
-        if "preference" in user_message.lower():
-            self.global_context["user_preferences"].update({
-                "last_preference": user_message
-            })
+    def get_recent_transitions(self, count: int = 5) -> List[Dict]:
+        """Get the most recent transitions"""
+        return self.transition_manager.get_recent_transitions(count)
+        
+
+        
+    def _format_parent_context(self, current_agent: str) -> str:
+        """Format the parent agent's context into a readable string"""
+        parent_agent = self._find_parent_agent(current_agent)
+        if not parent_agent or parent_agent not in self.agent_contexts:
+            return ""
             
-        # Update session data
-        self.global_context["session_data"].update({
-            "last_interaction": {
-                "user_message": user_message,
-                "agent_response": response,
-                "timestamp": None  # You can add timestamp if needed
-            }
-        })
-        
-    def _format_global_context(self) -> str:
-        """Format the global context into a readable string"""
+        parent_context = self.agent_contexts[parent_agent]
         context_parts = []
         
-        # Add recent conversation summary
-        if self.global_context["conversation_summary"]:
-            recent_messages = self.global_context["conversation_summary"][-3:]  # Last 3 messages
-            context_parts.append("Recent conversation: " + " | ".join([
-                f"{msg['role']}: {msg['content'][:50]}..." for msg in recent_messages
+        # Add recent conversation summary from parent
+        if parent_context["conversation_summary"]:
+            recent_messages = parent_context["conversation_summary"][-2:]  # Last 2 messages from parent
+            context_parts.append("Parent conversation: " + " | ".join([
+                f"{msg['role']}: {msg['content'][:30]}..." for msg in recent_messages
             ]))
             
-        # Add user preferences
-        if self.global_context["user_preferences"]:
-            context_parts.append("User preferences: " + str(self.global_context["user_preferences"]))
+        # Add user preferences from parent
+        if parent_context["user_preferences"]:
+            context_parts.append("User preferences: " + str(parent_context["user_preferences"]))
             
-        # Add transition history
-        if self.global_context["transition_history"]:
-            last_transition = self.global_context["transition_history"][-1]
-            context_parts.append(f"Last transition: {last_transition['from_agent']} -> {last_transition['to_agent']}")
+        # Add recent transitions from transition manager
+        last_transition = self.transition_manager.get_last_transition()
+        if last_transition:
+            context_parts.append(f"Previous transition: {last_transition['from_agent']} {TRANSITION_PATH_SEPARATOR} {last_transition['to_agent']}")
             
         return " | ".join(context_parts)
         
-    def _detect_intent_and_transition(self, user_message: str, agent_response: str) -> Optional[str]:
-        # First check for explicit transition in agent response
-        if TRANSITION_TEXT in agent_response:
-            transition_path = agent_response.split(TRANSITION_TEXT)[1].split("\n")[0].strip()
-            # Normalize agent names
-            transition_path = transition_path.lower().replace("_department", "_agent").replace("department", "_agent")
-            
-            # Handle multi-step transitions
-            if "->" in transition_path:
-                # Get the first agent in the path
-                first_agent = transition_path.split("->")[0].strip()
-                # Store the full path in global context for future transitions
-                self.global_context["transition_path"] = transition_path
-                return first_agent
-            return transition_path
-            
-        # Then check for transition confirmation
-        if TRANSITION_CONFIRMATION in agent_response:
-            target = agent_response.split(TRANSITION_CONFIRMATION)[1].split("\n")[0].strip()
-            return target.lower().replace("_department", "_agent").replace("department", "_agent")
-            
-        # Check if we're in the middle of a multi-step transition
-        if "transition_path" in self.global_context:
-            path = self.global_context["transition_path"]
-            current_agent = self.active_node.agent.get_name()
-            if current_agent in path:
-                # Get the next agent in the path
-                agents = path.split("->")
-                current_index = agents.index(current_agent)
-                if current_index + 1 < len(agents):
-                    next_agent = agents[current_index + 1].strip()
-                    if current_index + 2 == len(agents):
-                        # This is the last transition, clear the path
-                        del self.global_context["transition_path"]
-                    return next_agent
-            
-        # Finally check transition rules with improved detection
-        transition_rules = self.active_node.transition_rules
-        if not transition_rules:
+    def _find_parent_agent(self, agent_name: str) -> Optional[str]:
+        """Find the parent agent for a given agent"""
+        if agent_name == self.root.agent.get_name():
             return None
             
-        user_message_lower = user_message.lower()
-        agent_response_lower = agent_response.lower()
-        
-        # Check both user message and agent response for transition intents
-        for intent, target_agent in transition_rules.items():
-            if intent in user_message_lower or intent in agent_response_lower:
-                # Add confidence scoring
-                confidence = 0
-                if intent in user_message_lower:
-                    confidence += 1
-                if intent in agent_response_lower:
-                    confidence += 1
-                    
-                # Only transition if we have reasonable confidence
-                if confidence >= 1:
-                    return target_agent
-                    
+        # Search through all nodes to find the parent
+        for parent_name, parent_node in self.nodes.items():
+            for child in parent_node.get_children():
+                if child.agent.get_name() == agent_name:
+                    return parent_name
         return None
+        
+
+
 

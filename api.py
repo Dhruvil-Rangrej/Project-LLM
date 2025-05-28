@@ -4,6 +4,7 @@ from typing import List, Optional
 from multi_graph_agent import ConversationAgentGraph
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from utils.error_handler import ErrorHandler
 import logging
 
 # Configure logging
@@ -76,8 +77,8 @@ async def process_chat_message(content: str) -> Response:
             transition_path=agent_path
         )
     except Exception as e:
-        logger.error(f"Error processing message: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        error_response = ErrorHandler.handle_api_request_error(e, "process_chat_message")
+        raise HTTPException(status_code=500, detail=error_response["message"])
 
 @app.post("/chat")
 @app.post("/chat/")
@@ -108,18 +109,13 @@ async def chat_get(message: str = Query(..., description="The message to process
 @app.get("/agents/")
 async def get_agents():
     """Get list of all available agents"""
+    import json
+    with open('agent_config.json', 'r') as f:
+        config = json.load(f)
+    
+    agent_names = [agent['agent_name'] for agent in config['agents']]
     return {
-        "agents": [
-            "reception_agent",
-            "booking_agent",
-            "scheduler_agent",
-            "faq_agent",
-            "emergency_agent",
-            "feedback_agent",
-            "hr_agent",
-            "it_agent",
-            "visitor_agent"
-        ]
+        "agents": agent_names
     }
 
 @app.get("/current-agent")
@@ -128,6 +124,22 @@ async def get_current_agent():
     """Get the currently active agent"""
     return {
         "agent": agent_graph.get_current_agent().get_name()
+    }
+
+@app.get("/transitions")
+@app.get("/transitions/")
+async def get_transitions():
+    """Get all transitions that have occurred"""
+    return {
+        "transitions": agent_graph.get_transitions()
+    }
+
+@app.get("/recent-transitions")
+@app.get("/recent-transitions/")
+async def get_recent_transitions(count: int = Query(5, description="Number of recent transitions to return")):
+    """Get recent transitions"""
+    return {
+        "transitions": agent_graph.get_recent_transitions(count)
     }
 
 # Add error handlers

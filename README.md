@@ -1,6 +1,12 @@
 # Multi-Agent Office Assistant
 
-A sophisticated office management system that uses multiple specialized AI agents to handle various office tasks and inquiries. The system features a graph-based architecture that allows agents to intelligently route requests and collaborate to provide comprehensive office support.
+A sophisticated office management system that uses multiple specialized AI agents to handle various office tasks and inquiries. The system features a dynamic graph-based architecture that allows agents to intelligently route requests and collaborate to provide comprehensive office support.
+
+## Recent Updates
+
+- **Dynamic Configuration**: Graph structure now dynamically generated from agent_config.json
+- **Standardized Response Limits**: Unified word limits across all agents (100 words from config)
+- **Improved Maintainability**: Eliminated duplicate code and hardcoded values
 
 ## Features
 
@@ -16,10 +22,11 @@ A sophisticated office management system that uses multiple specialized AI agent
   - Visitor Agent: Manages visitor check-ins and badges
 
 - **Intelligent Routing**:
-  - Graph-based architecture for efficient request routing
+  - Dynamic graph-based architecture for efficient request routing
   - Multi-step transitions between agents
   - Context-aware responses
-  - Concise responses (limited to 50 words)
+  - Configurable response limits (100 words from agent_config.json)
+  - Automatic agent discovery and routing path generation
 
 - **REST API**:
   - FastAPI-based backend
@@ -27,6 +34,16 @@ A sophisticated office management system that uses multiple specialized AI agent
   - Comprehensive error handling
   - Detailed logging
   - Support for both GET and POST requests
+  - Dynamic agent endpoint generation
+
+## Configuration
+
+The system uses `agent_config.json` for centralized configuration:
+- Agent definitions and capabilities
+- Transition rules between agents
+- Response word limits
+- Tool configurations
+- Parent-child agent relationships
 
 ## Setup
 
@@ -72,22 +89,26 @@ print(response.json())
 
 ## Architecture
 
-The system uses a graph-based architecture where:
+The system uses a dynamic graph-based architecture where:
 - Each agent is a node in the graph
-- Agents can transition to other agents based on the context
+- Graph structure is generated dynamically from agent_config.json
+- Agents can transition to other agents based on context and configuration
 - The reception agent serves as the root node
 - All agents can route through multiple steps to reach the appropriate handler
+- Transition paths are automatically calculated and optimized
 
 ## Development
 
 The project is structured as follows:
-- `api.py`: FastAPI server implementation
+- `api.py`: FastAPI server implementation with dynamic agent discovery
 - `agent_graph.py`: Graph structure for agent routing
 - `agent_node.py`: Node implementation for the graph
 - `multi_graph_agent.py`: Main agent graph implementation
+- `dynamic_graph_generator.py`: Dynamic graph structure generation from config
+- `transition_manager.py`: Handles complex agent transitions
+- `agent_config.json`: Centralized configuration for all agents
 - `agents/`: Directory containing all specialized agents
 - `app.py`: Simple CLI interface for testing
-- `backend.ipynb`: Host the LLM model on a remote Google Colab / Kaggle notebook using vLLM
 
 ## Contributing
 
@@ -100,3 +121,19 @@ The project is structured as follows:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Code Quality
+
+The project maintains high code quality standards:
+
+### Recent Improvements
+- **Dynamic Configuration**: Replaced hardcoded values with configuration-driven approach
+- **Standardization**: Unified response limits and error handling patterns
+- **Maintainability**: Reduced code duplication and improved single source of truth
+
+
+### Fixed Issues
+1. **Hardcoded Agent Lists**: Replaced static lists with dynamic generation from config
+2. **Word Limit Inconsistencies**: Standardized to single source in agent_config.json
+3. **Duplicate Maintenance**: Eliminated redundant agent name management
+4. **Dead Code**: Removed outdated TODO comments and unused code
