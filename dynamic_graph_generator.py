@@ -39,14 +39,25 @@ GRAPH STRUCTURE:
         # Add common routing paths
         graph_structure += "\n- Common routing paths:"
         for path in sorted(transition_paths):
-            graph_structure += f"\n  * {path}"
-            
-        # Add syntax instructions
-        graph_structure += """
+            graph_structure += f"\n  * {path}"        # Add syntax instructions with path-finding information
+        graph_structure += f"""
 - Use exact syntax for transitions:
   * Single transition: TRANSITION_TO:agent_name
-  * Multi-step: TRANSITION_TO:agent1{TRANSITION_PATH_SEPARATOR}agent2
-- Example: TRANSITION_TO:it_agent or TRANSITION_TO:faq_agent{TRANSITION_PATH_SEPARATOR}reception_agent
+  * Multi-step: TRANSITION_TO:agent1{TRANSITION_PATH_SEPARATOR}agent2{TRANSITION_PATH_SEPARATOR}agent3
+  * System will automatically find the best path if direct connection doesn't exist
+- Examples: 
+  * TRANSITION_TO:it_agent
+  * TRANSITION_TO:booking_agent{TRANSITION_PATH_SEPARATOR}scheduler_agent
+
+TRANSITION GUIDELINES:
+- Only transition when users have SPECIFIC needs requiring specialized agents
+- Handle greetings, general questions, and basic info requests directly
+- Do NOT transition to yourself (avoid self-loops)
+- Transitions should be purposeful and based on clear user intent
+
+IMPORTANT: You have full autonomy to decide when and where to transition based on user needs. 
+The system will automatically handle pathfinding if the target agent is not directly connected.
+Simply use TRANSITION_TO:target_agent_name and the system will find the optimal route.
 """
         
         return graph_structure

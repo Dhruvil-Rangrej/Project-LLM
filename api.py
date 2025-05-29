@@ -4,8 +4,8 @@ from typing import List, Optional
 from multi_graph_agent import ConversationAgentGraph
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from utils.error_handler import ErrorHandler
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -66,8 +66,7 @@ async def process_chat_message(content: str) -> Response:
         # Combine chunks and clean the response
         full_response = "".join(response_chunks)
         cleaned_response = clean_response(full_response)
-        
-        # Get current agent and path
+          # Get current agent and path
         current_agent = agent_graph.get_current_agent().get_name()
         agent_path = agent_graph.get_agent_path()
         
@@ -77,8 +76,10 @@ async def process_chat_message(content: str) -> Response:
             transition_path=agent_path
         )
     except Exception as e:
-        error_response = ErrorHandler.handle_api_request_error(e, "process_chat_message")
-        raise HTTPException(status_code=500, detail=error_response["message"])
+        # Handle API request errors with consistent logging
+        error_message = f"Error in process_chat_message: {str(e)}"
+        logger.error(error_message, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/chat")
 @app.post("/chat/")

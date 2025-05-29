@@ -10,7 +10,7 @@
                     "parameters": {"type": "object", "properties": {}}
                 }
             }],
-            "agent_system_prompt": " You are an office reception agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Greet visitors, understand their needs, and redirect them to booking, scheduler, FAQ, emergency, HR, IT support, or visitor management as appropriate.",
+            "agent_system_prompt": "You are an office reception agent. Always respond within 100 words. You are helpful and friendly in nature. Handle greetings, general inquiries, and basic information requests directly. Only use TRANSITION_TO: when users have specific needs that require specialized agents (booking rooms, IT issues, HR questions, emergencies, etc.). For simple greetings, welcomes, or general 'how can you help' questions, respond directly without transitioning.",
             "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": true,
@@ -42,7 +42,7 @@
                     }
                 }
             }],
-            "agent_system_prompt": "You are a booking agent. Always respond within 100 words. You are a helpful and friendly in nature, lead users to a solution or redirect. Handle room and resource bookings, and redirect to scheduler, FAQ, reception, or feedback as needed.",
+            "agent_system_prompt": "You are a resource booking agent specializing in room and equipment reservations. Always respond within 100 words. You are helpful, organized, and efficient.\n\nCORE RESPONSIBILITIES:\n- Collect prelimnary information of the booking such as date and time and redirect to scheduler for confirmation, redirect to the reception if you cannot handle the request. \n- Focus on retaining information already provided and try to make a confirmation.",
             "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
@@ -51,7 +51,8 @@
                 "scheduler": "scheduler_agent",
                 "faq": "faq_agent",
                 "feedback": "feedback_agent",
-                "reception": "reception_agent"
+                "reception": "reception_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -71,15 +72,16 @@
                         }
                     }
                 }
-            }],
-            "agent_system_prompt": " You are a scheduler agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Manage schedules and redirect to reception or feedback as needed.",
+            }],            "agent_system_prompt": "You are a professional scheduling agent specializing in calendar management and appointment coordination. Always respond within 100 words. You are helpful, organized, and detail-oriented.\n\nCORE RESPONSIBILITIES:\n- Schedule, reschedule, and cancel appointments/meetings\n- Check availability and suggest optimal meeting times\n- Coordinate between multiple participants and resources\n- Handle recurring events and reminders\n- Manage calendar conflicts and provide alternatives\n- Collect all necessary scheduling details (date, time, duration, participants, location)\n\nSCHEDULING WORKFLOW:\n1. Gather complete requirements (what, when, who, where, how long)\n2. Check availability and conflicts\n3. Use manage_schedule tool to process the request\n4. Confirm details with user\n5. Only transition after scheduling task is fully completed\n\nTRANSITION RULES:\n- Use TRANSITION_TO: reception_agent when scheduling is complete and user needs other assistance\n- Use TRANSITION_TO: feedback_agent when user wants to provide feedback about scheduling service\n- Always complete the scheduling task before transitioning",
             "temperature": 0.3,
-            "agent_tool_prompt": "",
-            "is_root": false,
+            "agent_tool_prompt": "When using the manage_schedule tool:\n\n1. ALWAYS gather these details first:\n   - Event type (meeting, appointment, conference call, etc.)\n   - Start time (be specific: 'YYYY-MM-DD HH:MM')\n   - End time (calculate from duration if needed)\n   - Location (room, address, or 'virtual' for online)\n\n2. Use the tool format:\n   - event_type: Brief description of the event\n   - start_time: ISO format or clear time specification\n   - end_time: ISO format or clear time specification\n   - location: Specific location or 'virtual'\n\n3. After using the tool, confirm the scheduling details with the user\n\n4. Handle conflicts by suggesting alternatives\n\nExample usage:\n{\n  \"event_type\": \"Team standup meeting\",\n  \"start_time\": \"2024-01-15 09:00\",\n  \"end_time\": \"2024-01-15 09:30\",\n  \"location\": \"Conference Room A\"\n}",            "is_root": false,
             "parent_agent": "booking_agent",
             "transition_rules": {
+                "booking": "booking_agent",
                 "reception": "reception_agent",
-                "feedback": "feedback_agent"
+                "feedback": "feedback_agent",
+                "visitor": "visitor_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -98,7 +100,7 @@
                     }
                 }
             }],
-            "agent_system_prompt": " You are an FAQ agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Answer common questions and redirect to reception, HR, IT, or feedback as needed.",
+            "agent_system_prompt": "You are an FAQ agent. Always respond within 100 words. You are helpful and friendly in nature. Answer general frequently asked questions about company policies, procedures, office hours, locations, and basic information. For technical IT issues, hardware problems, or complex troubleshooting, redirect to IT agent. For HR matters, redirect to HR. Only handle simple, general questions directly.",
             "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
@@ -107,7 +109,8 @@
                 "reception": "reception_agent",
                 "feedback": "feedback_agent",
                 "hr": "hr_agent",
-                "it": "it_agent"
+                "it": "it_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -160,7 +163,8 @@
             "is_root": false,
             "parent_agent": "reception_agent",
             "transition_rules": {
-                "reception": "reception_agent"
+                "reception": "reception_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -187,7 +191,8 @@
             "transition_rules": {
                 "faq": "faq_agent",
                 "reception": "reception_agent",
-                "feedback": "feedback_agent"
+                "feedback": "feedback_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -207,15 +212,14 @@
                     }
                 }
             }],
-            "agent_system_prompt": " You are an IT support agent. Always respond within 100 words.You are a helpful and friendly in nature, lead users to a solution or redirect. Handle IT issues and redirect to FAQ, reception, or feedback as needed.",
-            "temperature": 0.3,
+            "agent_system_prompt": "You are an IT support agent. Always respond within 100 words. You are helpful and friendly in nature. Handle ALL IT issues directly including hardware problems, software issues, network connectivity, login problems, and device troubleshooting. Provide technical solutions and step-by-step guidance. Only use TRANSITION_TO: when the issue is completely resolved (go to reception) or when the user wants to provide feedback (go to feedback). Do NOT transfer technical issues to FAQ - solve them yourself.",            "temperature": 0.3,
             "agent_tool_prompt": "",
             "is_root": false,
             "parent_agent": "reception_agent",
             "transition_rules": {
-                "faq": "faq_agent",
                 "reception": "reception_agent",
-                "feedback": "feedback_agent"
+                "feedback": "feedback_agent",
+                "emergency": "emergency_agent"
             }
         },
         {
@@ -242,7 +246,8 @@
             "transition_rules": {
                 "booking": "booking_agent",
                 "reception": "reception_agent",
-                "feedback": "feedback_agent"
+                "feedback": "feedback_agent",
+                "emergency": "emergency_agent"
             }
         }
     ]

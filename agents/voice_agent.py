@@ -16,8 +16,8 @@ class ConversationalAgent:
         self._agent_system_prompt = agent_system_prompt + graph_structure
         self._temperature = temperature
         self._agent_tool_prompt = agent_tool_prompt
-        self._ngrok_url = os.environ.get("NGROK_SERVER_URL", "https://919c-34-125-210-249.ngrok-free.app")
-        self._model_name = "Qwen/Qwen3-1.7B"
+        self._ngrok_url = os.environ.get("NGROK_SERVER_URL", "https://d2c6-35-225-158-177.ngrok-free.app")
+        self._model_name = "Qwen/Qwen2.5-7B-Instruct"
 
     def get_name(self):
         return self._agent_name

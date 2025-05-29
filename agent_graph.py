@@ -126,7 +126,7 @@ class AgentGraph:
                 # Process the query with the new agent
                 yield from self.transition_manager.process_transitioned_message(
                     user_message, transition_target, self.nodes, self.agent_contexts, 
-                    self.conversation_history, self._format_parent_context)
+                    self.conversation_history, self._format_parent_context, context_str="")
                 
     def get_current_agent(self) -> ConversationalAgent:
         """Get the currently active agent"""

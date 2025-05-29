@@ -11,7 +11,7 @@ class JSONGraphBuilder:
             agent_name=json_data.get("agent_name", "custom_agent"),
             agent_tools=json_data.get("agent_tools", []),
             agent_system_prompt=json_data.get("agent_system_prompt", ""),
-            temperature=json_data.get("temperature", 0.7),
+            temperature=json_data.get("temperature", 0.3),
             agent_tool_prompt=json_data.get("agent_tool_prompt", "")
         )
 
